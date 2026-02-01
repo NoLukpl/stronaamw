@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rewitalizacja Ośrodka — Landing Page</title>
+  <meta name="description" content="Rewitalizacja ośrodka: plan zmian, wizualizacje przed/po, harmonogram, FAQ i formularz kontaktowy." />
+
+  <!-- Open Graph (pod social) -->
+  <meta property="og:title" content="Rewitalizacja Ośrodka — plan zmian" />
+  <meta property="og:description" content="Zobacz plan rewitalizacji, harmonogram i zostaw kontakt, aby otrzymywać aktualizacje." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="" /> <!-- TODO: wstaw link do grafiki -->
+
+  <!-- Tailwind CDN (bez buildu) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Minimalne smaczki bez zależności */
+    html { scroll-behavior: smooth; }
+    .ring-soft { box-shadow: 0 0 0 6px rgba(24,24,27,0.06); }
+    .shadow-soft { box-shadow: 0 12px 40px rgba(24,24,27,0.08); }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  </style>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900">
+  <!-- ====== CONFIG (edytuj to) ====== -->
+  <script>
+    const CONFIG = {
+      projectName: "Rewitalizacja Ośrodka [Nazwa]",
+      locationLine: "[Miejscowość], [Adres / okolica]",
+      heroTitle: "Nowe życie miejsca, które znasz.",
+      heroSubtitle: "Modernizujemy teren, infrastrukturę i ofertę, aby stworzyć nowoczesną, dostępną i przyjazną przestrzeń — przez cały rok.",
+      primaryCta: "Zapisz się po aktualizacje",
+      secondaryCta: "Zobacz plan zmian",
+      contactEmail: "kontakt@twojadomena.pl",
+      contactPhone: "+48 000 000 000",
+
+      // Linki do materiałów
+      onePagerUrl: "#",     // np. https://.../onepager.pdf
+      deckUrl: "#",         // np. https://.../prezentacja.pdf lub pptx online
+      privacyUrl: "#",      // polityka prywatności
+
+      // Jeśli chcesz później zbierać leady przez Make:
+      // wklej URL webhooka (Make -> Webhooks -> Custom webhook)
+      webhookUrl: "",       // np. https://hook.eu1.make.com/xxxxx
+
+      // Antyspam UX
+      cooldownSec: 30
+    };
+  </script>
+
+  <!-- Tło dekoracyjne -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-zinc-900/5 blur-3xl"></div>
+    <div class="absolute -bottom-40 right-[-120px] h-[520px] w-[520px] rounded-full bg-zinc-900/5 blur-3xl"></div>
+  </div>
+
+  <!-- ===== NAV ===== -->
+  <header class="sticky top-0 z-40 border-b border-zinc-200/60 bg-white/75 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+      <a href="#top" class="flex items-center gap-2 rounded-2xl px-2 py-1 hover:bg-zinc-50">
+        <div class="flex h-9 w-9 items-center justify-center rounded-2xl bg-zinc-900 text-white font-semibold">✦</div>
+        <div class="hidden sm:block">
+          <p id="navProjectName" class="text-sm font-semibold leading-tight"></p>
+          <p id="navLocation" class="text-xs text-zinc-500"></p>
+        </div>
+      </a>
+
+      <nav class="hidden items-center gap-1 sm:flex" aria-label="Nawigacja">
+        <a class="rounded-2xl px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50" href="#o-projekcie">O projekcie</a>
+        <a class="rounded-2xl px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50" href="#plan">Plan</a>
+        <a class="rounded-2xl px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50" href="#harmonogram">Harmonogram</a>
+        <a class="rounded-2xl px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50" href="#faq">FAQ</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a id="onepagerBtn"
+           class="hidden sm:inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+           href="#">
+          ⭳ Skrót PDF
+        </a>
+
+        <button id="openMenu"
+                class="sm:hidden inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-zinc-50"
+                aria-label="Otwórz menu" type="button">
+          ☰
+        </button>
+
+        <a class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-900 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
+           href="#formularz">
+          <span id="navCta"></span> →
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Mobile drawer ===== -->
+  <div id="drawerBackdrop" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute right-0 top-0 h-full w-[320px] bg-white shadow-soft">
+      <div class="flex items-center justify-between border-b border-zinc-200 p-4">
+        <p class="text-sm font-semibold">Menu</p>
+        <button id="closeMenu" class="rounded-2xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Zamknij menu" type="button">✕</button>
+      </div>
+
+      <div class="p-4 grid gap-1">
+        <a class="rounded-2xl px-3 py-3 text-sm font-medium text-zinc-800 hover:bg-zinc-50" href="#o-projekcie">O projekcie</a>
+        <a class="rounded-2xl px-3 py-3 text-sm font-medium text-zinc-800 hover:bg-zinc-50" href="#plan">Plan</a>
+        <a class="rounded-2xl px-3 py-3 text-sm font-medium text-zinc-800 hover:bg-zinc-50" href="#harmonogram">Harmonogram</a>
+        <a class="rounded-2xl px-3 py-3 text-sm font-medium text-zinc-800 hover:bg-zinc-50" href="#faq">FAQ</a>
+
+        <div class="mt-4 rounded-3xl border border-zinc-200 bg-zinc-50 p-4">
+          <p class="text-xs font-semibold">Szybkie akcje</p>
+          <div class="mt-3 grid gap-2">
+            <a class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800" href="#formularz">
+              <span id="drawerCta"></span> →
+            </a>
+            <a id="onepagerBtn2" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50" href="#">
+              ⭳ Skrót PDF
+            </a>
+          </div>
+        </div>
+
+        <div class="mt-4 text-xs text-zinc-500">
+          Tip: udostępniaj linki z hashami, np. <span class="kbd">#faq</span>, <span class="kbd">#plan</span>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <main id="top">
+    <div class="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-14">
+      <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
+        <div class="lg:col-span-6">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">📍 <span id="heroLocation"></span></span>
+            <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">🗓️ Aktualizacje etapów</span>
+          </div>
+
+          <h1 id="heroTitle" class="mt-5 text-3xl font-semibold tracking-tight sm:text-5xl"></h1>
+          <p id="heroSubtitle" class="mt-4 text-base leading-relaxed text-zinc-600 sm:text-lg"></p>
+
+          <div class="mt-6 grid gap-3 sm:grid-cols-3">
+            <div class="flex items-start gap-3 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <div class="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-zinc-900 text-white">♿</div>
+              <div>
+                <p class="text-sm font-semibold">Dostępność</p>
+                <p class="mt-1 text-xs leading-relaxed text-zinc-600">Udogodnienia i wygodne dojścia</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <div class="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-zinc-900 text-white">🛡️</div>
+              <div>
+                <p class="text-sm font-semibold">Standard</p>
+                <p class="mt-1 text-xs leading-relaxed text-zinc-600">Bezpieczeństwo i komfort</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <div class="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-zinc-900 text-white">🌿</div>
+              <div>
+                <p class="text-sm font-semibold">Cały rok</p>
+                <p class="mt-1 text-xs leading-relaxed text-zinc-600">Oferta niezależna od sezonu</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <a id="heroCta1"
+               class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-900 bg-zinc-900 px-5 py-3 text-base font-medium text-white shadow-sm hover:bg-zinc-800"
+               href="#formularz">
+              Zapisz się →
+            </a>
+            <a id="heroCta2"
+               class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-base font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
+               href="#plan">
+              Zobacz plan zmian
+            </a>
+            <div class="text-xs text-zinc-500">0 spamu • wypis w każdej chwili</div>
+          </div>
+
+          <div class="mt-8 flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-white">Przed / Po</span>
+            <span class="inline-flex items-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-white">Masterplan</span>
+            <span class="inline-flex items-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-white">FAQ</span>
+            <span class="inline-flex items-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-white">Współpraca</span>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-soft overflow-hidden">
+            <!-- VIDEO / MINIATURA -->
+            <div class="relative aspect-[16/10] bg-zinc-900 text-white grid place-items-center">
+              <!-- Podmień na obraz (img) lub embed wideo -->
+              <div class="text-center px-6">
+                <p class="text-sm font-semibold">Wideo / miniatura</p>
+                <p class="mt-2 text-xs text-white/70">
+                  Wstaw tu miniaturę lub embed (YouTube/Vimeo) — na potrzeby demo to wystarczy.
+                </p>
+                <div class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2 text-xs text-white/90">▶ Odtwórz</div>
+              </div>
+              <div class="absolute left-4 top-4 flex gap-2">
+                <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">Obecnie</span>
+                <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">Koncepcja</span>
+              </div>
+              <div class="absolute bottom-4 left-4 right-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                  wizualizacje • etapowanie • dostępność
+                </span>
+                <div class="flex gap-2">
+                  <a id="deckBtn"
+                     class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/95 px-4 py-2 text-xs font-medium text-zinc-900 shadow-sm hover:bg-white"
+                     href="#">
+                    ⭳ Prezentacja
+                  </a>
+                  <a id="onepagerBtn3"
+                     class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/95 px-4 py-2 text-xs font-medium text-zinc-900 shadow-sm hover:bg-white"
+                     href="#">
+                    ⭳ One-pager
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid gap-3 p-5 sm:grid-cols-3">
+              <div class="rounded-3xl border border-zinc-200 bg-zinc-50 p-4">
+                <p class="text-xs font-semibold text-zinc-900">Cel</p>
+                <p class="mt-1 text-xs leading-relaxed text-zinc-600">Miejsce wygodne, bezpieczne i atrakcyjne</p>
+              </div>
+              <div class="rounded-3xl border border-zinc-200 bg-zinc-50 p-4">
+                <p class="text-xs font-semibold text-zinc-900">Podejście</p>
+                <p class="mt-1 text-xs leading-relaxed text-zinc-600">Modernizacja etapami + komunikacja</p>
+              </div>
+              <div class="rounded-3xl border border-zinc-200 bg-zinc-50 p-4">
+                <p class="text-xs font-semibold text-zinc-900">Zaangażowanie</p>
+                <p class="mt-1 text-xs leading-relaxed text-zinc-600">Konsultacje + współpraca</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mini “zaufanie” -->
+      <div class="mt-8 grid gap-4 sm:grid-cols-3">
+        <div class="flex gap-4 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-white">👥</div>
+          <div>
+            <p class="text-sm font-semibold">Dla społeczności</p>
+            <p class="mt-1 text-sm text-zinc-600">Klarowna komunikacja i konsultacje.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-white">🏢</div>
+          <div>
+            <p class="text-sm font-semibold">Dla partnerów</p>
+            <p class="mt-1 text-sm text-zinc-600">Współpraca, usługi, najem.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-white">✨</div>
+          <div>
+            <p class="text-sm font-semibold">Dla gości</p>
+            <p class="mt-1 text-sm text-zinc-600">Oferta przez cały rok.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== O PROJEKCIE ===== -->
+    <section id="o-projekcie" class="scroll-mt-24 py-14 sm:py-20">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <p class="text-sm font-medium tracking-wide text-zinc-500">Wizja</p>
+        <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Co się zmieni</h2>
+        <p class="mt-3 text-base leading-relaxed text-zinc-600 sm:text-lg">Trzy filary, które porządkują projekt i ułatwiają szybkie zrozumienie korzyści.</p>
+
+        <div class="mt-8 grid gap-4 lg:grid-cols-3">
+          <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-white">🛡️</div>
+              <p class="text-base font-semibold">Infrastruktura & standard</p>
+            </div>
+            <p class="mt-3 text-sm leading-relaxed text-zinc-600">
+              Modernizacja kluczowych elementów, porządek funkcji i poprawa bezpieczeństwa. Efekt: komfort na co dzień.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">bezpieczeństwo</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">funkcjonalność</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">estetyka</span>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-white">🍽️</div>
+              <p class="text-base font-semibold">Oferta & doświadczenia</p>
+            </div>
+            <p class="mt-3 text-sm leading-relaxed text-zinc-600">
+              Gastronomia, rekreacja, strefy relaksu i wydarzenia — zaprojektowane tak, aby przyciągać ludzi cały rok.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">eventy</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">gastronomia</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">rekreacja</span>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-white">🌿</div>
+              <p class="text-base font-semibold">Zrównoważenie & otoczenie</p>
+            </div>
+            <p class="mt-3 text-sm leading-relaxed text-zinc-600">
+              Lepsza organizacja przestrzeni, zieleń, dojścia i rozwiązania zmniejszające uciążliwości.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">zieleń</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">dostępność</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">ład przestrzenny</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PLAN (PRZED/PO) ===== -->
+    <section id="plan" class="scroll-mt-24 py-14 sm:py-20">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <p class="text-sm font-medium tracking-wide text-zinc-500">Wizualnie i konkretnie</p>
+        <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Przed / Po</h2>
+        <p class="mt-3 text-base leading-relaxed text-zinc-600 sm:text-lg">
+          Podmień placeholdery na realne kadry (te same ujęcia). Najlepiej działa 6–10 plansz.
+        </p>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Card 1 -->
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+            <div class="relative aspect-[4/3] bg-gradient-to-br from-zinc-900/10 via-zinc-900/5 to-zinc-900/10">
+              <div class="absolute inset-0 grid grid-cols-2">
+                <div class="border-r border-white/50"></div><div></div>
+              </div>
+              <div class="absolute left-3 top-3 inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Ujęcie 1</div>
+              <div class="absolute bottom-3 left-3 flex gap-2">
+                <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-zinc-900">Obecnie</span>
+                <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-zinc-900">Koncepcja</span>
+              </div>
+            </div>
+            <div class="p-5">
+              <p class="text-sm font-semibold">Opis zmiany</p>
+              <p class="mt-1 text-sm leading-relaxed text-zinc-600">Krótko: co tu poprawiamy i jaki ma być efekt.</p>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+            <div class="relative aspect-[4/3] bg-gradient-to-br from-zinc-900/10 via-zinc-900/5 to-zinc-900/10">
+              <div class="absolute inset-0 grid grid-cols-2">
+                <div class="border-r border-white/50"></div><div></div>
+              </div>
+              <div class="absolute left-3 top-3 inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Ujęcie 2</div>
+              <div class="absolute bottom-3 left-3 flex gap-2">
+                <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-zinc-900">Obecnie</span>
+                <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-zinc-900">Koncepcja</span>
+              </div>
+            </div>
+            <div class="p-5">
+              <p class="text-sm font-semibold">Opis zmiany</p>
+              <p class="mt-1 text-sm leading-relaxed text-zinc-600">Np. dojścia, strefa relaksu, standard zabudowy.</p>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+            <div class="relative aspect-[4/3] bg-gradient-to-br from-zinc-900/10 via-zinc-900/5 to-zinc-900/10">
+              <div class="absolute inset-0 grid grid-cols-2">
+                <div class="border-r border-white/50"></div><div></div>
+              </div>
+              <div class="absolute left-3 top-3 inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Ujęcie 3</div>
+              <div class="absolute bottom-3 left-3 flex gap-2">
+                <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-zinc-900">Obecnie</span>
+                <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-zinc-900">Koncepcja</span>
+              </div>
+            </div>
+            <div class="p-5">
+              <p class="text-sm font-semibold">Opis zmiany</p>
+              <p class="mt-1 text-sm leading-relaxed text-zinc-600">Np. uporządkowanie przestrzeni, zieleń, oświetlenie.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-sm text-zinc-600">Masz już wizualizacje? Dodaj je tu i będzie gotowe “do pokazania”.</div>
+          <div class="flex gap-2">
+            <a id="onepagerBtn4" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50" href="#">⭳ Skrót PDF</a>
+            <a class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-900 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-zinc-800" href="#formularz">Dostawaj aktualizacje →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HARMONOGRAM ===== -->
+    <section id="harmonogram" class="scroll-mt-24 py-14 sm:py-20">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <p class="text-sm font-medium tracking-wide text-zinc-500">Krok po kroku</p>
+        <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Harmonogram i etapy</h2>
+        <p class="mt-3 text-base leading-relaxed text-zinc-600 sm:text-lg">Etapowanie ogranicza utrudnienia i pozwala szybciej uruchamiać gotowe strefy.</p>
+
+        <div class="mt-8 grid gap-4 lg:grid-cols-12">
+          <div class="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <ol class="space-y-4">
+              <li class="flex gap-4">
+                <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white font-semibold">1</div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-semibold">Etap 0 — analizy i formalności</p>
+                    <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Start</span>
+                  </div>
+                  <p class="mt-1 text-sm text-zinc-600">Audyt, dokumentacja, uzgodnienia, decyzje.</p>
+                </div>
+              </li>
+              <li class="flex gap-4">
+                <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white font-semibold">2</div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-semibold">Etap 1 — infrastruktura krytyczna</p>
+                    <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Następnie</span>
+                  </div>
+                  <p class="mt-1 text-sm text-zinc-600">Priorytet dla bezpieczeństwa i komfortu.</p>
+                </div>
+              </li>
+              <li class="flex gap-4">
+                <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white font-semibold">3</div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-semibold">Etap 2 — modernizacja i wyposażenie</p>
+                    <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">W toku</span>
+                  </div>
+                  <p class="mt-1 text-sm text-zinc-600">Podniesienie standardu i dopracowanie funkcji.</p>
+                </div>
+              </li>
+              <li class="flex gap-4">
+                <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white font-semibold">4</div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-semibold">Etap 3 — uruchomienie + wydarzenia</p>
+                    <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Otwarcie</span>
+                  </div>
+                  <p class="mt-1 text-sm text-zinc-600">Start usług i promocja w kontrolowanej formie.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <div class="lg:col-span-5 grid gap-4">
+            <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <p class="text-sm font-semibold">Dla kogo to jest?</p>
+              <p class="mt-2 text-sm text-zinc-600">Kliknij, a formularz ustawi rolę automatycznie.</p>
+              <div class="mt-4 grid gap-2">
+                <button data-role="mieszkaniec" type="button" class="roleBtn flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-left text-sm shadow-sm hover:bg-zinc-50">
+                  <span class="flex items-center gap-2">👥 Mieszkaniec okolicy</span><span>→</span>
+                </button>
+                <button data-role="partner" type="button" class="roleBtn flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-left text-sm shadow-sm hover:bg-zinc-50">
+                  <span class="flex items-center gap-2">🏢 Partner / inwestor</span><span>→</span>
+                </button>
+                <button data-role="gosc" type="button" class="roleBtn flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-left text-sm shadow-sm hover:bg-zinc-50">
+                  <span class="flex items-center gap-2">✨ Gość / klient</span><span>→</span>
+                </button>
+              </div>
+              <p class="mt-4 text-xs text-zinc-500">To jest demo — później dopracujesz treści i plan.</p>
+            </div>
+
+            <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <p class="text-sm font-semibold">Materiały do pobrania</p>
+              <p class="mt-2 text-sm text-zinc-600">Dodaj linki do PDF, a ludzie szybciej zrozumieją projekt.</p>
+              <div class="mt-4 grid gap-2">
+                <a id="onepagerBtn5" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50" href="#">⭳ One-pager</a>
+                <a id="deckBtn2" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50" href="#">⭳ Prezentacja</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FORMULARZ ===== -->
+    <section id="formularz" class="scroll-mt-24 py-14 sm:py-20">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <p class="text-sm font-medium tracking-wide text-zinc-500">Bądź na bieżąco</p>
+        <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Zapisz się po aktualizacje</h2>
+        <p class="mt-3 text-base leading-relaxed text-zinc-600 sm:text-lg">Wyślemy tylko konkret: postęp, wizualizacje, terminy konsultacji.</p>
+
+        <div class="mt-8 grid gap-4 lg:grid-cols-12">
+          <div class="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <form id="leadForm" class="grid gap-4" novalidate>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="text-sm font-medium text-zinc-900">Imię <span class="ml-2 text-xs text-zinc-500">(opcjonalnie)</span></label>
+                  <input id="nameInput" name="name" autocomplete="given-name"
+                         class="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:ring-2 focus:ring-zinc-900/10"
+                         placeholder="np. Jan" />
+                </div>
+
+                <div>
+                  <label class="text-sm font-medium text-zinc-900">E-mail</label>
+                  <input id="emailInput" name="email" autocomplete="email" inputmode="email"
+                         class="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:ring-2 focus:ring-zinc-900/10"
+                         placeholder="np. jan@email.com" />
+                  <p id="emailErr" class="mt-1 text-xs text-red-600 hidden"></p>
+                </div>
+              </div>
+
+              <!-- honeypot -->
+              <div class="hidden" aria-hidden="true">
+                <label>Company</label>
+                <input name="company" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <div>
+                <label class="text-sm font-medium text-zinc-900">Kim jesteś?</label>
+                <select id="roleSelect" name="role"
+                        class="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:ring-2 focus:ring-zinc-900/10">
+                  <option value="mieszkaniec">Mieszkaniec okolicy</option>
+                  <option value="partner">Partner / inwestor</option>
+                  <option value="gosc">Gość / klient</option>
+                  <option value="inne">Inne</option>
+                </select>
+              </div>
+
+              <div>
+                <p class="text-sm font-medium text-zinc-900">Co Cię interesuje?</p>
+                <div class="mt-2 grid gap-2 sm:grid-cols-2 text-sm text-zinc-700">
+                  <label class="flex cursor-pointer items-start gap-3">
+                    <input type="checkbox" name="interest" value="postepy" class="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900/20" checked>
+                    <span class="leading-relaxed">Postępy prac i terminy</span>
+                  </label>
+                  <label class="flex cursor-pointer items-start gap-3">
+                    <input type="checkbox" name="interest" value="konsultacje" class="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900/20">
+                    <span class="leading-relaxed">Konsultacje / spotkania</span>
+                  </label>
+                  <label class="flex cursor-pointer items-start gap-3">
+                    <input type="checkbox" name="interest" value="wspolpraca" class="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900/20">
+                    <span class="leading-relaxed">Współpraca / usługi</span>
+                  </label>
+                  <label class="flex cursor-pointer items-start gap-3">
+                    <input type="checkbox" name="interest" value="oferta" class="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900/20">
+                    <span class="leading-relaxed">Oferta dla gości</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rounded-3xl border border-zinc-200 bg-zinc-50 p-4">
+                <label class="flex cursor-pointer items-start gap-3 text-sm text-zinc-700">
+                  <input id="consentInput" type="checkbox" class="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900/20">
+                  <span class="leading-relaxed">
+                    Wyrażam zgodę na przetwarzanie danych w celu wysyłki informacji o projekcie.
+                    <a id="privacyLink" class="underline" href="#" target="_blank" rel="noreferrer">Polityka prywatności</a>.
+                  </span>
+                </label>
+                <p id="consentErr" class="mt-2 text-xs text-red-600 hidden"></p>
+                <p id="cooldownErr" class="mt-2 text-xs text-red-600 hidden"></p>
+              </div>
+
+              <button id="submitBtn" type="submit"
+                      class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-900 bg-zinc-900 px-5 py-3 text-base font-medium text-white shadow-sm hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60">
+                <span id="btnText">Zapisuję się</span>
+                <span id="btnSpinner" class="hidden">⏳</span>
+              </button>
+
+              <div id="formMsg" class="hidden rounded-3xl border p-4 text-sm"></div>
+
+              <p class="text-xs text-zinc-500">
+                Demo działa bez backendu. Jeśli chcesz zbierać leady: wklej <span class="kbd">CONFIG.webhookUrl</span> (np. Make).
+              </p>
+            </form>
+          </div>
+
+          <div class="lg:col-span-5 grid gap-4">
+            <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <p class="text-sm font-semibold">Kontakt</p>
+              <p class="mt-2 text-sm text-zinc-600">
+                <span id="contactEmail"></span><br/>
+                <span id="contactPhone"></span>
+              </p>
+            </div>
+
+            <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <p class="text-sm font-semibold">Dlaczego warto?</p>
+              <ul class="mt-3 space-y-2 text-sm text-zinc-600">
+                <li class="flex gap-2"><span>✓</span> terminy i etapy bez plotek</li>
+                <li class="flex gap-2"><span>✓</span> wizualizacje i plany w jednym miejscu</li>
+                <li class="flex gap-2"><span>✓</span> konsultacje i możliwość wpływu</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section id="faq" class="scroll-mt-24 py-14 sm:py-20">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <p class="text-sm font-medium tracking-wide text-zinc-500">Pytania i odpowiedzi</p>
+        <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">FAQ</h2>
+        <p class="mt-3 text-base leading-relaxed text-zinc-600 sm:text-lg">Krótko i konkretnie. Dodaj/usuń pytania pod swój projekt.</p>
+
+        <div class="mt-8 grid gap-3" id="faqList">
+          <!-- FAQ item -->
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <button class="faqBtn flex w-full items-center justify-between gap-4 px-5 py-4 text-left" type="button">
+              <span class="text-sm font-semibold sm:text-base">Na czym polega rewitalizacja?</span>
+              <span class="faqChev text-zinc-500 transition">⌄</span>
+            </button>
+            <div class="faqBody hidden px-5 pb-5 text-sm leading-relaxed text-zinc-600 sm:text-base">
+              To kompleksowa modernizacja terenu, infrastruktury i standardu, wraz z rozwojem oferty i uporządkowaniem funkcji.
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <button class="faqBtn flex w-full items-center justify-between gap-4 px-5 py-4 text-left" type="button">
+              <span class="text-sm font-semibold sm:text-base">Czy prace będą prowadzone etapami?</span>
+              <span class="faqChev text-zinc-500 transition">⌄</span>
+            </button>
+            <div class="faqBody hidden px-5 pb-5 text-sm leading-relaxed text-zinc-600 sm:text-base">
+              Tak — etapowanie ogranicza utrudnienia i pozwala szybciej uruchamiać gotowe strefy.
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <button class="faqBtn flex w-full items-center justify-between gap-4 px-5 py-4 text-left" type="button">
+              <span class="text-sm font-semibold sm:text-base">Jak można zostać partnerem / usługodawcą?</span>
+              <span class="faqChev text-zinc-500 transition">⌄</span>
+            </button>
+            <div class="faqBody hidden px-5 pb-5 text-sm leading-relaxed text-zinc-600 sm:text-base">
+              Zostaw kontakt w formularzu i zaznacz „Współpraca / usługi”. Odezwie się osoba prowadząca.
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <button class="faqBtn flex w-full items-center justify-between gap-4 px-5 py-4 text-left" type="button">
+              <span class="text-sm font-semibold sm:text-base">Czy obiekt będzie dostępny dla osób z ograniczoną mobilnością?</span>
+              <span class="faqChev text-zinc-500 transition">⌄</span>
+            </button>
+            <div class="faqBody hidden px-5 pb-5 text-sm leading-relaxed text-zinc-600 sm:text-base">
+              Tak — plan zakłada rozwiązania poprawiające dostępność (ciągi piesze, wejścia, udogodnienia w kluczowych punktach).
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-3xl border border-zinc-200 bg-zinc-50 p-4">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold text-zinc-900">Nie znalazłeś odpowiedzi?</p>
+              <p class="mt-1 text-xs text-zinc-600">Zostaw kontakt w formularzu — wrócimy z odpowiedzią.</p>
+            </div>
+            <a class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
+               href="#formularz">Zadaj pytanie →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="border-t border-zinc-200 bg-white">
+      <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p id="footerProjectName" class="text-sm font-semibold"></p>
+            <p id="footerLocation" class="mt-2 text-sm text-zinc-600"></p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Transparentność</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Etapowanie</span>
+              <span class="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Jakość</span>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-semibold">Nawigacja</p>
+            <div class="mt-2 grid gap-2">
+              <a class="text-sm text-zinc-600 hover:text-zinc-900" href="#o-projekcie">O projekcie</a>
+              <a class="text-sm text-zinc-600 hover:text-zinc-900" href="#plan">Plan</a>
+              <a class="text-sm text-zinc-600 hover:text-zinc-900" href="#harmonogram">Harmonogram</a>
+              <a class="text-sm text-zinc-600 hover:text-zinc-900" href="#faq">FAQ</a>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-semibold">Kontakt</p>
+            <div class="mt-2 grid gap-2">
+              <a id="footerEmail" class="text-sm text-zinc-600 hover:text-zinc-900" href="#"></a>
+              <a id="footerPhone" class="text-sm text-zinc-600 hover:text-zinc-900" href="#"></a>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-semibold">Pliki</p>
+            <div class="mt-2 grid gap-2">
+              <a id="footerOnepager" class="text-sm text-zinc-600 hover:text-zinc-900" href="#">One-pager (PDF)</a>
+              <a id="footerDeck" class="text-sm text-zinc-600 hover:text-zinc-900" href="#">Prezentacja</a>
+              <a id="footerPrivacy" class="text-sm text-zinc-600 hover:text-zinc-900" href="#">Polityka prywatności</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-col gap-2 border-t border-zinc-200 pt-6 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© <span id="year"></span> • <span id="footerProjectName2"></span></p>
+          <p>Wersja demo do pokazania • podmień linki w <span class="kbd">CONFIG</span></p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Sticky CTA (mobile) -->
+    <div class="fixed bottom-3 left-0 right-0 z-40 px-3 sm:hidden">
+      <div class="mx-auto max-w-6xl">
+        <div class="flex items-center justify-between rounded-3xl border border-zinc-200 bg-white/90 p-3 shadow-soft backdrop-blur">
+          <div>
+            <p class="text-xs font-semibold">Aktualizacje projektu</p>
+            <p class="text-[11px] text-zinc-500">bez spamu</p>
+          </div>
+          <a class="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
+             href="#formularz">Zapisz się →</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== JS: menu, FAQ, deep-linki, formularz ===== -->
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    function setText(id, value) {
+      const el = $(id);
+      if (el) el.textContent = value ?? "";
+    }
+
+    function setLink(id, href, fallback = "#") {
+      const el = $(id);
+      if (!el) return;
+      el.href = href && href !== "#" ? href : fallback;
+    }
+
+    function normalizeTel(phone) {
+      return String(phone || "")
+        .replaceAll(" ", "")
+        .replaceAll("-", "")
+        .replaceAll("(", "")
+        .replaceAll(")", "");
+    }
+
+    function getUtmParams() {
+      try {
+        const sp = new URLSearchParams(location.search);
+        const keys = ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","gclid","fbclid"];
+        const out = {};
+        keys.forEach(k => { const v = sp.get(k); if (v) out[k]=v; });
+        return out;
+      } catch { return {}; }
+    }
+
+    function validateEmailBasic(v) {
+      v = (v || "").trim();
+      if (!v) return "Podaj e-mail";
+      if (v.includes(" ")) return "Podaj poprawny e-mail";
+      const at = v.indexOf("@");
+      if (at <= 0 || at !== v.lastIndexOf("@")) return "Podaj poprawny e-mail";
+      const dot = v.lastIndexOf(".");
+      if (dot < at + 2 || dot >= v.length - 1) return "Podaj poprawny e-mail";
+      return "";
+    }
+
+    function show(el) { el?.classList.remove("hidden"); }
+    function hide(el) { el?.classList.add("hidden"); }
+
+    // ===== init content from CONFIG
+    setText("#navProjectName", CONFIG.projectName);
+    setText("#footerProjectName", CONFIG.projectName);
+    setText("#footerProjectName2", CONFIG.projectName);
+    setText("#navLocation", CONFIG.locationLine);
+    setText("#footerLocation", CONFIG.locationLine);
+    setText("#heroLocation", CONFIG.locationLine);
+    setText("#heroTitle", CONFIG.heroTitle);
+    setText("#heroSubtitle", CONFIG.heroSubtitle);
+    setText("#navCta", CONFIG.primaryCta);
+    setText("#drawerCta", CONFIG.primaryCta);
+
+    setLink("#onepagerBtn", CONFIG.onePagerUrl);
+    setLink("#onepagerBtn2", CONFIG.onePagerUrl);
+    setLink("#onepagerBtn3", CONFIG.onePagerUrl);
+    setLink("#onepagerBtn4", CONFIG.onePagerUrl);
+    setLink("#onepagerBtn5", CONFIG.onePagerUrl);
+    setLink("#footerOnepager", CONFIG.onePagerUrl);
+    setLink("#deckBtn", CONFIG.deckUrl);
+    setLink("#deckBtn2", CONFIG.deckUrl);
+    setLink("#footerDeck", CONFIG.deckUrl);
+    setLink("#privacyLink", CONFIG.privacyUrl);
+    setLink("#footerPrivacy", CONFIG.privacyUrl);
+
+    setText("#contactEmail", CONFIG.contactEmail);
+    setText("#contactPhone", CONFIG.contactPhone);
+    const emailHref = "mailto:" + CONFIG.contactEmail;
+    const telHref = "tel:" + normalizeTel(CONFIG.contactPhone);
+
+    const footerEmail = $("#footerEmail");
+    if (footerEmail) { footerEmail.textContent = CONFIG.contactEmail; footerEmail.href = emailHref; }
+    const footerPhone = $("#footerPhone");
+    if (footerPhone) { footerPhone.textContent = CONFIG.contactPhone; footerPhone.href = telHref; }
+
+    $("#year").textContent = new Date().getFullYear();
+
+    // ===== mobile drawer
+    const drawer = $("#drawerBackdrop");
+    $("#openMenu")?.addEventListener("click", () => show(drawer));
+    $("#closeMenu")?.addEventListener("click", () => hide(drawer));
+    drawer?.addEventListener("click", (e) => {
+      if (e.target === drawer || e.target === drawer.firstElementChild) hide(drawer);
+    });
+    $$("#drawerBackdrop a[href^='#']").forEach(a => a.addEventListener("click", () => hide(drawer)));
+
+    // ===== deep-link smooth scroll + hash
+    $$("a[href^='#']").forEach(a => {
+      a.addEventListener("click", (e) => {
+        const id = a.getAttribute("href").slice(1);
+        const el = document.getElementById(id);
+        if (!el) return;
+        e.preventDefault();
+        el.scrollIntoView({behavior:"smooth", block:"start"});
+        history.replaceState(null, "", "#" + id);
+      });
+    });
+
+    // ===== FAQ accordion (single-open)
+    $$(".faqBtn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const card = btn.closest("div.rounded-3xl");
+        const body = card.querySelector(".faqBody");
+        const chev = card.querySelector(".faqChev");
+        const isOpen = !body.classList.contains("hidden");
+
+        // close all
+        $$(".faqBody").forEach(b => b.classList.add("hidden"));
+        $$(".faqChev").forEach(c => c.classList.remove("rotate-180"));
+
+        if (!isOpen) {
+          body.classList.remove("hidden");
+          chev.classList.add("rotate-180");
+        }
+      });
+    });
+
+    // ===== role buttons -> sync with select + scroll
+    const roleSelect = $("#roleSelect");
+    $$(".roleBtn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const role = btn.getAttribute("data-role");
+        if (roleSelect) roleSelect.value = role;
+        document.getElementById("formularz")?.scrollIntoView({behavior:"smooth", block:"start"});
+        history.replaceState(null, "", "#formularz");
+      });
+    });
+
+    // ===== form submit (demo + opcjonalnie webhook)
+    const form = $("#leadForm");
+    const emailInput = $("#emailInput");
+    const consentInput = $("#consentInput");
+    const emailErr = $("#emailErr");
+    const consentErr = $("#consentErr");
+    const cooldownErr = $("#cooldownErr");
+    const msg = $("#formMsg");
+    const btn = $("#submitBtn");
+    const btnText = $("#btnText");
+    const spinner = $("#btnSpinner");
+
+    function setMsg(kind, text) {
+      msg.classList.remove("hidden");
+      msg.classList.remove("border-red-200","bg-red-50","text-red-700","border-zinc-200","bg-zinc-50","text-zinc-700","border-emerald-200","bg-emerald-50","text-emerald-800");
+      if (kind === "error") msg.classList.add("border-red-200","bg-red-50","text-red-700");
+      if (kind === "info") msg.classList.add("border-zinc-200","bg-zinc-50","text-zinc-700");
+      if (kind === "success") msg.classList.add("border-emerald-200","bg-emerald-50","text-emerald-800");
+      msg.textContent = text;
+    }
+
+    function hideErr(el){ el.textContent=""; el.classList.add("hidden"); }
+    function showErr(el, t){ el.textContent=t; el.classList.remove("hidden"); }
+
+    emailInput?.addEventListener("input", () => hideErr(emailErr));
+    consentInput?.addEventListener("change", () => hideErr(consentErr));
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideErr(emailErr); hideErr(consentErr); hideErr(cooldownErr);
+      msg.classList.add("hidden");
+
+      const data = new FormData(form);
+      const honeypot = (data.get("company") || "").toString().trim();
+      if (honeypot) return; // bot
+
+      // cooldown
+      try {
+        const last = Number(localStorage.getItem("lp_last_submit_ts") || "0");
+        const cooldownMs = (CONFIG.cooldownSec || 30) * 1000;
+        if (last && Date.now() - last < cooldownMs) {
+          const left = Math.ceil((cooldownMs - (Date.now() - last)) / 1000);
+          showErr(cooldownErr, "Spróbuj ponownie za " + left + "s.");
+          return;
+        }
+      } catch {}
+
+      const email = (data.get("email") || "").toString();
+      const emailError = validateEmailBasic(email);
+      if (emailError) { showErr(emailErr, emailError); return; }
+
+      if (!consentInput.checked) { showErr(consentErr, "Wymagana zgoda"); return; }
+
+      const interests = data.getAll("interest").map(x => x.toString());
+      const payload = {
+        name: (data.get("name") || "").toString().trim() || null,
+        email: email.trim(),
+        role: (data.get("role") || "mieszkaniec").toString(),
+        interests,
+        consent: true,
+        double_opt_in: true,
+        source: "landing-demo",
+        page_url: location.href,
+        referrer: document.referrer || null,
+        submitted_at: new Date().toISOString(),
+        utm: getUtmParams()
+      };
+
+      btn.disabled = true;
+      btnText.textContent = "Wysyłanie…";
+      spinner.classList.remove("hidden");
+
+      try {
+        // Jeśli nie ma webhooka — zachowaj demo: pokaż sukces i wypisz payload w konsoli
+        if (!CONFIG.webhookUrl) {
+          console.log("DEMO payload (ustaw CONFIG.webhookUrl aby wysyłać):", payload);
+          setMsg("success", "Dzięki! (Tryb demo) — formularz działa. Ustaw webhook, aby zbierać leady.");
+          form.reset();
+          return;
+        }
+
+        const res = await fetch(CONFIG.webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          throw new Error("Błąd wysyłki (" + res.status + "). " + (t || ""));
+        }
+
+        localStorage.setItem("lp_last_submit_ts", String(Date.now()));
+        setMsg("success", "Dzięki! Jesteś na liście — wyślemy aktualizacje.");
+        form.reset();
+      } catch (err) {
+        setMsg("error", err?.message || "Coś poszło nie tak. Spróbuj ponownie.");
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = "Zapisuję się";
+        spinner.classList.add("hidden");
+      }
+    });
+
+    // Jeśli ktoś wejdzie bezpośrednio na #sekcję
+    window.addEventListener("load", () => {
+      const hash = (location.hash || "").replace("#","").trim();
+      if (!hash) return;
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  </script>
+</body>
+</html>
